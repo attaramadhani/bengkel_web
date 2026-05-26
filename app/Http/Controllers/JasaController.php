@@ -8,9 +8,13 @@ use App\Models\Jasa;
 
 class JasaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $jasas = Jasa::latest()->get();
+        $search = $request->get('search');
+        $jasas = Jasa::when($search, function ($query, $search) {
+            return $query->where('nama_jasa', 'ilike', '%' . $search . '%');
+        })->latest()->get();
+
         return view('jasa.index', compact('jasas'));
     }
 

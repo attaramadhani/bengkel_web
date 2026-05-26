@@ -11,6 +11,21 @@
     </a>
 </div>
 
+<form action="{{ route('jasa.index') }}" method="GET" style="margin-bottom: 1.5rem; display: flex; gap: 10px; align-items: center;">
+    <div style="position: relative; flex: 1;">
+        <input type="text" name="search" class="form-control" placeholder="Cari layanan jasa..." value="{{ request('search') }}" style="padding-left: 45px;">
+        <i data-lucide="search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); width: 18px; height: 18px;"></i>
+    </div>
+    @if(request('search'))
+        <a href="{{ route('jasa.index') }}" class="btn" style="background: #ef4444; color: white;">
+            <i data-lucide="x"></i> Reset
+        </a>
+    @endif
+    <button type="submit" class="btn btn-primary">
+        <i data-lucide="filter"></i> Cari
+    </button>
+</form>
+
 <div class="data-card">
     <table>
         <thead>
@@ -43,7 +58,11 @@
             @empty
             <tr>
                 <td colspan="3" style="text-align: center; padding: 3rem; color: var(--text-muted);">
-                    Belum ada data layanan jasa.
+                    @if(request('search'))
+                        Tidak ada layanan jasa yang cocok dengan pencarian "{{ request('search') }}".
+                    @else
+                        Belum ada data layanan jasa.
+                    @endif
                 </td>
             </tr>
             @endforelse

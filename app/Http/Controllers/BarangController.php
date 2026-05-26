@@ -8,9 +8,13 @@ use App\Models\Barang;
 
 class BarangController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $barangs = Barang::latest()->get();
+        $search = $request->get('search');
+        $barangs = Barang::when($search, function ($query, $search) {
+            return $query->where('nama_barang', 'ilike', '%' . $search . '%');
+        })->latest()->get();
+
         return view('barang.index', compact('barangs'));
     }
 

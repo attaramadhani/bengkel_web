@@ -4,6 +4,62 @@
 @section('header_title', 'Kasir / Transaksi Baru')
 
 @section('content')
+<!-- Tom Select CSS -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+<style>
+    .ts-wrapper.form-control {
+        padding: 0;
+        border: none;
+        background: transparent;
+        height: auto;
+    }
+    .ts-control {
+        padding: 12px 16px !important;
+        border-radius: 12px !important;
+        border: 1px solid var(--card-border) !important;
+        background-color: var(--bg-color) !important;
+        color: var(--text-main) !important;
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.95rem !important;
+        transition: all 0.3s ease !important;
+        height: auto !important;
+        line-height: inherit !important;
+    }
+    .ts-wrapper.focus .ts-control {
+        border-color: var(--accent-primary) !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    }
+    .ts-dropdown {
+        border-radius: 12px !important;
+        box-shadow: var(--shadow-hover) !important;
+        border: 1px solid var(--card-border) !important;
+        background: var(--card-bg) !important;
+        z-index: 1000 !important;
+        padding: 5px 0 !important;
+    }
+    .ts-dropdown .option {
+        padding: 10px 16px !important;
+        color: var(--text-main) !important;
+        cursor: pointer;
+    }
+    .ts-dropdown .active {
+        background-color: rgba(59, 130, 246, 0.1) !important;
+        color: var(--accent-primary) !important;
+    }
+    .ts-dropdown .optgroup-header {
+        font-weight: 700 !important;
+        color: var(--text-muted) !important;
+        background: #f8fafc !important;
+        padding: 8px 16px !important;
+        font-size: 0.75rem !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px;
+    }
+    .ts-dropdown .option[data-value=""] {
+        display: none !important;
+    }
+</style>
+
 <div style="display: grid; grid-template-columns: 1fr 380px; gap: 2rem;">
     <!-- POS Area -->
     <div class="data-card" style="padding: 2rem;">
@@ -13,7 +69,7 @@
             <div style="flex: 1;">
                 <label class="form-label">Cari Barang/Jasa</label>
                 <select id="item-selector" class="form-control">
-                    <option value="">-- Pilih Barang atau Jasa --</option>
+                    <option value="" disabled selected hidden>-- Pilih Barang atau Jasa --</option>
                     <optgroup label="Barang (Suku Cadang)">
                         @foreach($barangs as $b)
                             <option value="barang|{{ $b->id_barang }}|{{ $b->nama_barang }}|{{ $b->harga_jual }}|{{ $b->stok }}">
@@ -133,9 +189,18 @@
 
 <!-- Midtrans Snap JS (Sandbox) -->
 <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ $midtransClientKey }}"></script>
+<!-- Tom Select JS -->
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
 <script>
+    // Initialize Tom Select
+    const tomSelectInstance = new TomSelect("#item-selector", {
+        create: false,
+        placeholder: "-- Pilih Barang atau Jasa --",
+        allowEmptyOption: false
+    });
+
     const itemSelector = document.getElementById('item-selector');
     const addItemBtn = document.getElementById('add-item-btn');
     const cartBody = document.getElementById('cart-body');
@@ -165,6 +230,9 @@
             cart.push({ type, id, name, price: parseFloat(price), qty: 1, stock: parseInt(stock) });
         }
         renderCart();
+        
+        // Reset Tom Select selection after adding
+        tomSelectInstance.setValue('');
     });
 
     function renderCart() {

@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.292.0"></script>
     <style>
         :root {
             --accent-primary: #3b82f6;
@@ -110,7 +110,12 @@
             </div>
             <div class="form-group">
                 <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" placeholder="Masukkan password" required>
+                <div style="position: relative;">
+                    <input type="password" name="password" id="password" class="form-control" style="padding-right: 50px;" placeholder="Masukkan password" required>
+                    <button type="button" id="togglePassword" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #9fb3c8; padding: 0; display: flex; align-items: center; justify-content: center; outline: none;">
+                        <i data-lucide="eye" id="eyeIcon" style="width: 20px; height: 20px;"></i>
+                    </button>
+                </div>
             </div>
             <button type="submit" class="btn-login">Login Sekarang</button>
         </form>
@@ -119,5 +124,27 @@
             Lupa password? Hubungi Admin IT.
         </p>
     </div>
+
+    <script>
+        // Inisialisasi Lucide Icons
+        lucide.createIcons();
+
+        const togglePassword = document.querySelector('#togglePassword');
+        const passwordInput = document.querySelector('#password');
+        const eyeIcon = document.querySelector('#eyeIcon');
+
+        togglePassword.addEventListener('click', function () {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            if (type === 'password') {
+                eyeIcon.setAttribute('data-lucide', 'eye');
+            } else {
+                eyeIcon.setAttribute('data-lucide', 'eye-off');
+            }
+            
+            lucide.createIcons();
+        });
+    </script>
 </body>
 </html>
