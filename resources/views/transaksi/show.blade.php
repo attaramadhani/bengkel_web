@@ -10,7 +10,7 @@
     </a>
 </div>
 
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+<div class="detail-grid">
     <div class="data-card">
         <div style="padding: 1.5rem; border-bottom: 1px solid var(--card-border);">
             <h3 style="font-size: 1rem;">Rincian Barang & Jasa</h3>

@@ -433,4 +433,16 @@ tr:hover td {
     div[style*="width: 380px"] {
         width: 100% !important;
     }
+
+    .detail-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+    }
+}
+
+/* Transaction Detail Grid (Desktop) */
+.detail-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
 }
