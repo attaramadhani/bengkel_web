@@ -25,3 +25,8 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+.vercel
+
+/migrate_from_supabase.php
+/reset_passwords.php
