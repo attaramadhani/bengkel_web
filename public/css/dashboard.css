@@ -443,12 +443,18 @@ tr:hover td {
     grid-template-columns: 2fr 1fr;
     gap: 2rem;
 }
+.detail-grid > * {
+    min-width: 0;
+}
 
 /* POS Layout (Desktop) */
 .grid-layout-pos {
     display: grid;
     grid-template-columns: 1fr 380px;
     gap: 2rem;
+}
+.grid-layout-pos > * {
+    min-width: 0;
 }
 
 /* Form layouts that stack on mobile */
