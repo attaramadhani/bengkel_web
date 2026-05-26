@@ -165,6 +165,7 @@
 <body>
     <!-- Floating Toast Container -->
     <div class="toast-container" id="toast-container"></div>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
     <div class="dashboard-container">
         <!-- Sidebar -->
@@ -227,6 +228,9 @@
         <!-- Main Content -->
         <main class="main-content">
             <header>
+                <button class="hamburger-btn" id="mobile-toggle" style="display: none; background: none; border: none; cursor: pointer; color: var(--text-main); padding: 8px; align-items: center; justify-content: center; outline: none;">
+                    <i data-lucide="menu" style="width: 24px; height: 24px;"></i>
+                </button>
                 <h1>@yield('header_title', 'Overview')</h1>
                 <div class="user-profile">
                     <div style="text-align: right;">
@@ -275,6 +279,23 @@
         @if(session('error'))
             showToast("{{ session('error') }}", 'error');
         @endif
+
+        // Mobile Sidebar Toggle JS
+        const mobileToggle = document.getElementById('mobile-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        if (mobileToggle && sidebar && sidebarOverlay) {
+            mobileToggle.addEventListener('click', function() {
+                sidebar.classList.add('open');
+                sidebarOverlay.classList.add('active');
+            });
+
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                sidebarOverlay.classList.remove('active');
+            });
+        }
     </script>
 </body>
 </html>
