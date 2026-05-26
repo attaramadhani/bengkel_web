@@ -60,12 +60,12 @@
     }
 </style>
 
-<div style="display: grid; grid-template-columns: 1fr 380px; gap: 2rem;">
+<div class="grid-layout-pos">
     <!-- POS Area -->
     <div class="data-card" style="padding: 2rem;">
         <h2 class="section-title"><i data-lucide="shopping-cart"></i> Pilih Item & Jasa</h2>
         
-        <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+        <div class="flex-row-mobile-stack" style="margin-bottom: 2rem;">
             <div style="flex: 1;">
                 <label class="form-label">Cari Barang/Jasa</label>
                 <select id="item-selector" class="form-control">

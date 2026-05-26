@@ -11,7 +11,7 @@
     </a>
 </div>
 
-<form action="{{ route('barang.index') }}" method="GET" style="margin-bottom: 1.5rem; display: flex; gap: 10px; align-items: center;">
+<form action="{{ route('barang.index') }}" method="GET" class="flex-row-mobile-stack" style="margin-bottom: 1.5rem; align-items: flex-end;">
     <div style="position: relative; flex: 1;">
         <input type="text" name="search" class="form-control" placeholder="Cari nama barang..." value="{{ request('search') }}" style="padding-left: 45px;">
         <i data-lucide="search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); width: 18px; height: 18px;"></i>

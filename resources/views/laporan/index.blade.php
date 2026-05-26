@@ -8,7 +8,7 @@
 
 <!-- Filter Section -->
 <div class="data-card" style="padding: 1.5rem; margin-bottom: 2rem;">
-    <form action="{{ route('laporan.index') }}" method="GET" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+    <form action="{{ route('laporan.index') }}" method="GET" class="flex-row-mobile-stack" style="align-items: flex-end;">
         <div class="form-group" style="margin-bottom: 0;">
             <label class="form-label">Filter</label>
             <select name="filter" id="filter-type" class="form-control" onchange="toggleFilterInputs()">
@@ -29,14 +29,14 @@
             <label class="form-label">Tahun</label>
             <input type="number" name="tahun" class="form-control" value="{{ request('tahun', now()->year) }}" min="2020" max="{{ now()->year }}">
         </div>
-        <button type="submit" class="btn btn-primary" style="height: 45px;">
+        <button type="submit" class="btn btn-primary">
             <i data-lucide="filter"></i> Terapkan
         </button>
     </form>
 </div>
 
 <!-- Summary Cards -->
-<div class="stats-grid" style="grid-template-columns: repeat(2, 1fr);">
+<div class="stats-grid">
     <div class="stat-card">
         <div class="stat-label">Pendapatan — {{ $label }}</div>
         <div class="stat-value" style="color: var(--accent-primary);">Rp {{ number_format($totalPendapatan, 0, ',', '.') }}</div>
@@ -55,7 +55,7 @@
     </div>
 </div>
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+<div class="detail-grid" style="margin-bottom: 2rem;">
     <div class="data-card" style="padding: 2rem;">
         <h2 class="section-title"><i data-lucide="package"></i> Top 5 Barang Terlaris</h2>
         <div style="height: 250px;">
