@@ -147,6 +147,83 @@ class TransaksiController extends Controller
         return response()->json(['status' => 'ok']);
     }
 
+    public function export(Request $request)
+    {
+        $filter = $request->get('filter');
+        $query = Transaksi::with(['user', 'details.barang', 'details.jasa']);
+
+        if ($filter) {
+            if ($filter === 'harian') {
+                $tanggal = $request->get('tanggal', now()->toDateString());
+                $query->whereDate('created_at', $tanggal);
+                $filename = "transaksi-harian-{$tanggal}.csv";
+            } elseif ($filter === 'bulanan') {
+                $bulan = $request->get('bulan', now()->format('Y-m'));
+                $query->whereYear('created_at', substr($bulan, 0, 4))
+                      ->whereMonth('created_at', substr($bulan, 5, 2));
+                $filename = "transaksi-bulanan-{$bulan}.csv";
+            } else { // tahunan
+                $tahun = $request->get('tahun', now()->year);
+                $query->whereYear('created_at', $tahun);
+                $filename = "transaksi-tahunan-{$tahun}.csv";
+            }
+        } else {
+            $filename = "semua-transaksi-" . now()->format('Y-m-d-His') . ".csv";
+        }
+
+        $transaksis = $query->latest()->get();
+
+        $headers = [
+            "Content-type"        => "text/csv; charset=UTF-8",
+            "Content-Disposition" => "attachment; filename={$filename}",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function() use($transaksis) {
+            $file = fopen('php://output', 'w');
+            
+            // UTF-8 BOM
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            fputcsv($file, [
+                'Tanggal',
+                'ID Transaksi',
+                'Kasir',
+                'Metode Pembayaran',
+                'Status Pembayaran',
+                'Rincian Item (Qty)',
+                'Total Pembayaran (Rp)'
+            ]);
+
+            foreach ($transaksis as $trx) {
+                $itemDetails = [];
+                foreach ($trx->details as $detail) {
+                    if ($detail->barang) {
+                        $itemDetails[] = $detail->barang->nama_barang . " (x" . $detail->qty . ")";
+                    } elseif ($detail->jasa) {
+                        $itemDetails[] = $detail->jasa->nama_jasa . " (x" . $detail->qty . ")";
+                    }
+                }
+                
+                fputcsv($file, [
+                    $trx->created_at->format('Y-m-d H:i:s'),
+                    $trx->id_transaksi,
+                    $trx->user->username ?? 'System',
+                    strtoupper($trx->metode_bayar),
+                    strtoupper($trx->status_bayar),
+                    implode(", ", $itemDetails),
+                    $trx->total_pembayaran
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
     public function show(Transaksi $transaksi)
     {
         $transaksi->load(['user', 'details.barang', 'details.jasa']);

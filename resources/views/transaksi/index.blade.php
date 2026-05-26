@@ -6,9 +6,14 @@
 @section('content')
 <div class="header-actions">
     <h2 class="section-title"><i data-lucide="history"></i> Daftar Transaksi Selesai</h2>
-    <a href="{{ route('transaksi.create') }}" class="btn btn-primary">
-        <i data-lucide="plus"></i> Transaksi Baru
-    </a>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <a href="{{ route('transaksi.export') }}" class="btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
+            <i data-lucide="file-spreadsheet"></i> Ekspor Excel
+        </a>
+        <a href="{{ route('transaksi.create') }}" class="btn btn-primary">
+            <i data-lucide="plus"></i> Transaksi Baru
+        </a>
+    </div>
 </div>
 
 <div class="data-card">

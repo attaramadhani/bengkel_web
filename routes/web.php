@@ -18,6 +18,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // Protected Routes (semua user login)
 Route::middleware(['auth'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/transaksi/export', [TransaksiController::class, 'export'])->name('transaksi.export');
     Route::resource('transaksi', TransaksiController::class);
 
     // Admin Only - Kelola Master Data & Laporan

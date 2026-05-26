@@ -29,9 +29,14 @@
             <label class="form-label">Tahun</label>
             <input type="number" name="tahun" class="form-control" value="{{ request('tahun', now()->year) }}" min="2020" max="{{ now()->year }}">
         </div>
-        <button type="submit" class="btn btn-primary">
-            <i data-lucide="filter"></i> Terapkan
-        </button>
+        <div class="flex-row-mobile-stack" style="gap: 10px; margin-bottom: 0;">
+            <button type="submit" class="btn btn-primary">
+                <i data-lucide="filter"></i> Terapkan
+            </button>
+            <a href="{{ route('transaksi.export', request()->all()) }}" class="btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
+                <i data-lucide="file-spreadsheet"></i> Ekspor Excel
+            </a>
+        </div>
     </form>
 </div>
 
