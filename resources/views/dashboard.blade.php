@@ -24,7 +24,7 @@
     </div>
 </div>
 
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+<div class="detail-grid">
     <!-- Recent Transactions -->
     <div>
         <h2 class="section-title"><i data-lucide="history"></i> Transaksi Terakhir</h2>
