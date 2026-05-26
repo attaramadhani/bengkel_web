@@ -4,6 +4,166 @@
 @section('header_title', 'Detail Transaksi #' . substr($transaksi->id_transaksi, 0, 8))
 
 @section('content')
+<style>
+    /* Styling khusus struk untuk cetak */
+    .receipt-print {
+        display: none;
+    }
+    
+    @media print {
+        /* Sembunyikan container utama dashboard */
+        .dashboard-container, header, .btn, #mobile-toggle, .toast-container, .sidebar-overlay {
+            display: none !important;
+            visibility: hidden !important;
+        }
+        
+        body {
+            background: white !important;
+            color: black !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        
+        /* Tampilkan struk cetak */
+        .receipt-print {
+            display: block !important;
+            width: 76mm; /* Ukuran standar kertas thermal printer */
+            margin: 0 auto;
+            padding: 10px 5px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            line-height: 1.3;
+            color: #000;
+            box-sizing: border-box;
+        }
+        
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .receipt-header h2 {
+            margin: 0 0 4px 0;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .receipt-header p {
+            margin: 0;
+            font-size: 11px;
+        }
+        
+        .receipt-divider {
+            text-align: center;
+            margin: 6px 0;
+            letter-spacing: -1px;
+            font-weight: bold;
+        }
+        
+        .receipt-meta {
+            font-size: 11px;
+        }
+        .receipt-meta p {
+            margin: 3px 0;
+        }
+        
+        .receipt-items {
+            margin: 8px 0;
+        }
+        .receipt-item-row {
+            margin-bottom: 6px;
+        }
+        .receipt-item-row .item-name {
+            font-weight: bold;
+            word-break: break-all;
+        }
+        .receipt-item-row .item-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin-top: 2px;
+        }
+        
+        .receipt-totals {
+            margin-top: 8px;
+        }
+        .receipt-totals .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 3px 0;
+        }
+        .receipt-totals .total-row .total-val {
+            font-weight: bold;
+            font-size: 13px;
+        }
+        
+        .receipt-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 11px;
+        }
+        
+        @page {
+            margin: 0;
+            size: auto;
+        }
+    }
+</style>
+
+<!-- Tampilan Struk Cetak Thermal (Hanya muncul saat di-print) -->
+<div class="receipt-print">
+    <div class="receipt-header">
+        <h2>BENGKEL PRO</h2>
+        <p>Jl. Raya Utama No. 45, Tokyo</p>
+        <p>Telp: 0812-3456-7890</p>
+    </div>
+    
+    <div class="receipt-divider">================================</div>
+    
+    <div class="receipt-meta">
+        <p>No. Trans : #{{ substr($transaksi->id_transaksi, 0, 8) }}</p>
+        <p>Waktu     : {{ $transaksi->created_at->format('d/m/Y H:i') }}</p>
+        <p>Kasir     : {{ $transaksi->user->username ?? 'System' }}</p>
+    </div>
+    
+    <div class="receipt-divider">--------------------------------</div>
+    
+    <div class="receipt-items">
+        @foreach($transaksi->details as $detail)
+            <div class="receipt-item-row">
+                <div class="item-name">{{ $detail->barang->nama_barang ?? $detail->jasa->nama_jasa ?? '-' }}</div>
+                <div class="item-details">
+                    <span>{{ $detail->qty }} x Rp {{ number_format($detail->id_barang ? ($detail->barang->harga_jual ?? 0) : ($detail->jasa->harga_jasa ?? 0), 0, ',', '.') }}</span>
+                    <span>Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</span>
+                </div>
+            </div>
+        @endforeach
+    </div>
+    
+    <div class="receipt-divider">--------------------------------</div>
+    
+    <div class="receipt-totals">
+        <div class="total-row">
+            <span>TOTAL :</span>
+            <span class="total-val">Rp {{ number_format($transaksi->total_pembayaran, 0, ',', '.') }}</span>
+        </div>
+        <div class="total-row">
+            <span>Metode:</span>
+            <span>{{ strtoupper($transaksi->metode_bayar) }}</span>
+        </div>
+        <div class="total-row">
+            <span>Status:</span>
+            <span>{{ strtoupper($transaksi->status_bayar) }}</span>
+        </div>
+    </div>
+    
+    <div class="receipt-divider">================================</div>
+    
+    <div class="receipt-footer">
+        <p>TERIMA KASIH</p>
+        <p>Atas Kunjungan Anda</p>
+        <p>Layanan Garansi Cek di Website</p>
+    </div>
+</div>
+
 <div style="margin-bottom: 2rem;">
     <a href="{{ route('transaksi.index') }}" class="btn" style="background: white; border: 1px solid var(--card-border);">
         <i data-lucide="arrow-left"></i> Kembali
