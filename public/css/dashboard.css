@@ -446,3 +446,39 @@ tr:hover td {
     grid-template-columns: 2fr 1fr;
     gap: 2rem;
 }
+
+/* POS Layout (Desktop) */
+.grid-layout-pos {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 2rem;
+}
+
+/* Form layouts that stack on mobile */
+.flex-row-mobile-stack {
+    display: flex;
+    gap: 1.25rem;
+}
+
+@media (max-width: 768px) {
+    .grid-layout-pos {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+    }
+    
+    .flex-row-mobile-stack {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 1.25rem !important;
+    }
+    
+    .flex-row-mobile-stack > div {
+        width: 100% !important;
+    }
+    
+    .flex-row-mobile-stack button,
+    .flex-row-mobile-stack a {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+}
