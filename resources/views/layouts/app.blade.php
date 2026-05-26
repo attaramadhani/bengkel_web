@@ -101,9 +101,71 @@
             color: var(--accent-primary);
             border-color: var(--accent-primary);
         }
+        
+        /* Modern Floating Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .toast {
+            background: rgba(255, 255, 255, 0.95);
+            border-left: 5px solid #3b82f6;
+            padding: 16px 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 320px;
+            backdrop-filter: blur(10px);
+            transform: translateX(120%);
+            animation: toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        .toast.toast-success {
+            border-left-color: #10b981;
+        }
+        .toast.toast-error {
+            border-left-color: #ef4444;
+        }
+        .toast-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+        .toast-success .toast-icon {
+            color: #10b981;
+        }
+        .toast-error .toast-icon {
+            color: #ef4444;
+        }
+        .toast-message {
+            color: #1f2937;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .toast.fade-out {
+            opacity: 0;
+            transform: translateX(120%) scale(0.9);
+        }
+        @keyframes toastSlideIn {
+            to {
+                transform: translateX(0);
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Floating Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
     <div class="dashboard-container">
         <!-- Sidebar -->
         <aside class="sidebar">
@@ -175,24 +237,44 @@
                 </div>
             </header>
 
-            @if(session('success'))
-                <div class="alert alert-success">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            @if(session('error'))
-                <div class="alert" style="background: #fff5f5; color: #c53030; border: 1px solid #fed7d7;">
-                    {{ session('error') }}
-                </div>
-            @endif
-
             @yield('content')
         </main>
     </div>
 
     <script>
         lucide.createIcons();
+
+        // Modern Toast Notification Function
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            let iconName = 'check-circle-2';
+            if (type === 'error') iconName = 'alert-circle';
+            
+            toast.innerHTML = `
+                <div class="toast-icon"><i data-lucide="${iconName}"></i></div>
+                <div class="toast-message">${message}</div>
+            `;
+            container.appendChild(toast);
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3500);
+        }
+
+        // Trigger Laravel Flash Session Toasts
+        @if(session('success'))
+            showToast("{{ session('success') }}", 'success');
+        @endif
+        @if(session('error'))
+            showToast("{{ session('error') }}", 'error');
+        @endif
     </script>
 </body>
 </html>
