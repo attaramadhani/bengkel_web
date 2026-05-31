@@ -11,10 +11,25 @@
     }
     
     @media print {
-        /* Sembunyikan container utama dashboard */
-        .dashboard-container, header, .btn, #mobile-toggle, .toast-container, .sidebar-overlay {
+        /* Sembunyikan elemen non-cetak */
+        .no-print,
+        .sidebar,
+        header,
+        .toast-container,
+        .sidebar-overlay,
+        #mobile-toggle {
             display: none !important;
-            visibility: hidden !important;
+        }
+
+        /* Reset layout utama agar mendukung pencetakan */
+        .dashboard-container,
+        .main-content {
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: auto !important;
+            background: transparent !important;
+            box-shadow: none !important;
         }
         
         body {
@@ -164,13 +179,13 @@
     </div>
 </div>
 
-<div style="margin-bottom: 2rem;">
+<div class="no-print" style="margin-bottom: 2rem;">
     <a href="{{ route('transaksi.index') }}" class="btn" style="background: white; border: 1px solid var(--card-border);">
         <i data-lucide="arrow-left"></i> Kembali
     </a>
 </div>
 
-<div class="detail-grid">
+<div class="detail-grid no-print">
     <div class="data-card">
         <div style="padding: 1.5rem; border-bottom: 1px solid var(--card-border);">
             <h3 style="font-size: 1rem;">Rincian Barang & Jasa</h3>
