@@ -12,14 +12,14 @@
         <div class="form-group" style="margin-bottom: 0;">
             <label class="form-label">Filter</label>
             <select name="filter" id="filter-type" class="form-control" onchange="toggleFilterInputs()">
-                <option value="harian" {{ $filter == 'harian' ? 'selected' : '' }}>Harian</option>
+                <option value="mingguan" {{ $filter == 'mingguan' ? 'selected' : '' }}>Mingguan</option>
                 <option value="bulanan" {{ $filter == 'bulanan' ? 'selected' : '' }}>Bulanan</option>
                 <option value="tahunan" {{ $filter == 'tahunan' ? 'selected' : '' }}>Tahunan</option>
             </select>
         </div>
-        <div class="form-group" style="margin-bottom: 0;" id="input-harian">
-            <label class="form-label">Tanggal</label>
-            <input type="date" name="tanggal" class="form-control" value="{{ request('tanggal', now()->toDateString()) }}">
+        <div class="form-group" style="margin-bottom: 0; display: none;" id="input-mingguan">
+            <label class="form-label">Minggu</label>
+            <input type="week" name="minggu" class="form-control" value="{{ request('minggu', now()->format('Y-\WW')) }}">
         </div>
         <div class="form-group" style="margin-bottom: 0; display: none;" id="input-bulanan">
             <label class="form-label">Bulan</label>
@@ -54,7 +54,7 @@
 
 <!-- Revenue Chart -->
 <div class="data-card" style="padding: 2rem; margin-bottom: 2rem;">
-    <h2 class="section-title"><i data-lucide="trending-up"></i> Tren Pendapatan 7 Hari Terakhir</h2>
+    <h2 class="section-title"><i data-lucide="trending-up"></i> {{ $chartTitle }}</h2>
     <div style="height: 300px;">
         <canvas id="revenueChart"></canvas>
     </div>
@@ -110,7 +110,7 @@
     // Toggle filter inputs
     function toggleFilterInputs() {
         const type = document.getElementById('filter-type').value;
-        document.getElementById('input-harian').style.display = type === 'harian' ? 'block' : 'none';
+        document.getElementById('input-mingguan').style.display = type === 'mingguan' ? 'block' : 'none';
         document.getElementById('input-bulanan').style.display = type === 'bulanan' ? 'block' : 'none';
         document.getElementById('input-tahunan').style.display = type === 'tahunan' ? 'block' : 'none';
     }
@@ -120,7 +120,7 @@
     new Chart(document.getElementById('revenueChart').getContext('2d'), {
         type: 'line',
         data: {
-            labels: @json($revenueData->pluck('date')),
+            labels: @json($revenueData->pluck('label')),
             datasets: [{
                 label: 'Pendapatan (Rp)',
                 data: @json($revenueData->pluck('total')),

@@ -182,10 +182,18 @@ class TransaksiController extends Controller
         $query = Transaksi::with(['user', 'details.barang', 'details.jasa']);
 
         if ($filter) {
-            if ($filter === 'harian') {
-                $tanggal = $request->get('tanggal', now()->toDateString());
-                $query->whereDate('created_at', $tanggal);
-                $filename = "transaksi-harian-{$tanggal}.csv";
+            if ($filter === 'mingguan') {
+                $week = $request->get('minggu', now()->format('Y-\WW'));
+                try {
+                    $startOfWeek = \Carbon\Carbon::parse($week)->startOfWeek();
+                    $endOfWeek = \Carbon\Carbon::parse($week)->endOfWeek();
+                } catch (\Exception $e) {
+                    $week = now()->format('Y-\WW');
+                    $startOfWeek = now()->startOfWeek();
+                    $endOfWeek = now()->endOfWeek();
+                }
+                $query->whereBetween('created_at', [$startOfWeek, $endOfWeek]);
+                $filename = "transaksi-mingguan-{$week}.csv";
             } elseif ($filter === 'bulanan') {
                 $bulan = $request->get('bulan', now()->format('Y-m'));
                 $query->whereYear('created_at', substr($bulan, 0, 4))

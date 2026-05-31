@@ -14,39 +14,100 @@ class LaporanController extends Controller
 {
     public function index(Request $request)
     {
-        $filter = $request->get('filter', 'harian');
-        $tanggal = $request->get('tanggal', now()->toDateString());
-
-        // Build query berdasarkan filter
+        $filter = $request->get('filter', 'mingguan');
         $query = Transaksi::query();
 
-        if ($filter === 'harian') {
-            $query->whereDate('created_at', $tanggal);
-            $label = 'Hari ini (' . \Carbon\Carbon::parse($tanggal)->format('d M Y') . ')';
+        if ($filter === 'mingguan') {
+            $week = $request->get('minggu', now()->format('Y-\WW'));
+            try {
+                $startOfWeek = \Carbon\Carbon::parse($week)->startOfWeek();
+                $endOfWeek = \Carbon\Carbon::parse($week)->endOfWeek();
+            } catch (\Exception $e) {
+                $week = now()->format('Y-\WW');
+                $startOfWeek = now()->startOfWeek();
+                $endOfWeek = now()->endOfWeek();
+            }
+            $query->whereBetween('created_at', [$startOfWeek, $endOfWeek]);
+            $label = 'Minggu ke-' . substr($week, 6) . ' (' . $startOfWeek->format('d M Y') . ' - ' . $endOfWeek->format('d M Y') . ')';
+
+            // Pendapatan chart mingguan (populasi 7 hari)
+            $revenueRaw = Transaksi::select(
+                    DB::raw('DATE(created_at) as date_label'),
+                    DB::raw('SUM(total_pembayaran) as total')
+                )
+                ->whereBetween('created_at', [$startOfWeek, $endOfWeek])
+                ->groupBy('date_label')
+                ->get();
+
+            $revenueData = collect();
+            for ($date = clone $startOfWeek; $date->lte($endOfWeek); $date->addDay()) {
+                $dateStr = $date->toDateString();
+                $match = $revenueRaw->firstWhere('date_label', $dateStr);
+                $revenueData->push((object)[
+                    'label' => $date->format('D, d M'),
+                    'total' => $match ? (float)$match->total : 0.0
+                ]);
+            }
+            $chartTitle = 'Tren Pendapatan Mingguan';
         } elseif ($filter === 'bulanan') {
             $bulan = $request->get('bulan', now()->format('Y-m'));
-            $query->whereYear('created_at', substr($bulan, 0, 4))
-                  ->whereMonth('created_at', substr($bulan, 5, 2));
-            $label = 'Bulan ' . \Carbon\Carbon::parse($bulan . '-01')->format('F Y');
+            try {
+                $startOfMonth = \Carbon\Carbon::parse($bulan . '-01')->startOfMonth();
+                $endOfMonth = \Carbon\Carbon::parse($bulan . '-01')->endOfMonth();
+            } catch (\Exception $e) {
+                $bulan = now()->format('Y-m');
+                $startOfMonth = now()->startOfMonth();
+                $endOfMonth = now()->endOfMonth();
+            }
+            $query->whereBetween('created_at', [$startOfMonth, $endOfMonth]);
+            $label = 'Bulan ' . $startOfMonth->format('F Y');
+
+            // Pendapatan chart bulanan (populasi semua tanggal bulan ini)
+            $revenueRaw = Transaksi::select(
+                    DB::raw('DATE(created_at) as date_label'),
+                    DB::raw('SUM(total_pembayaran) as total')
+                )
+                ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+                ->groupBy('date_label')
+                ->get();
+
+            $revenueData = collect();
+            for ($date = clone $startOfMonth; $date->lte($endOfMonth); $date->addDay()) {
+                $dateStr = $date->toDateString();
+                $match = $revenueRaw->firstWhere('date_label', $dateStr);
+                $revenueData->push((object)[
+                    'label' => $date->format('d'),
+                    'total' => $match ? (float)$match->total : 0.0
+                ]);
+            }
+            $chartTitle = 'Tren Pendapatan Bulanan';
         } else { // tahunan
             $tahun = $request->get('tahun', now()->year);
             $query->whereYear('created_at', $tahun);
             $label = 'Tahun ' . $tahun;
+
+            // Pendapatan chart tahunan (populasi 12 bulan)
+            $revenueRaw = Transaksi::select(
+                    DB::raw('MONTH(created_at) as month_num'),
+                    DB::raw('SUM(total_pembayaran) as total')
+                )
+                ->whereYear('created_at', $tahun)
+                ->groupBy('month_num')
+                ->get();
+
+            $revenueData = collect(range(1, 12))->map(function ($m) use ($revenueRaw) {
+                $match = $revenueRaw->firstWhere('month_num', $m);
+                return (object)[
+                    'label' => \Carbon\Carbon::create()->month($m)->format('M'),
+                    'total' => $match ? (float)$match->total : 0.0
+                ];
+            });
+            $chartTitle = 'Tren Pendapatan Tahunan';
         }
 
         // Summary
         $totalPendapatan = (clone $query)->sum('total_pembayaran');
         $totalTransaksi = (clone $query)->count();
-
-        // 1. Pendapatan chart
-        $revenueData = Transaksi::select(
-                DB::raw('DATE(created_at) as date'),
-                DB::raw('SUM(total_pembayaran) as total')
-            )
-            ->where('created_at', '>=', now()->subDays(7))
-            ->groupBy('date')
-            ->orderBy('date', 'ASC')
-            ->get();
 
         // 2. Top 5 Barang Terlaris
         $topBarang = DetailTransaksi::with('barang')
@@ -71,7 +132,7 @@ class LaporanController extends Controller
 
         return view('laporan.index', compact(
             'revenueData', 'topBarang', 'topJasa',
-            'filter', 'label', 'totalPendapatan', 'totalTransaksi', 'transaksis'
+            'filter', 'label', 'totalPendapatan', 'totalTransaksi', 'transaksis', 'chartTitle'
         ));
     }
 }
