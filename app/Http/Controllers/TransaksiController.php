@@ -15,6 +15,33 @@ class TransaksiController extends Controller
     public function index()
     {
         $transaksis = Transaksi::with(['user', 'details'])->latest()->get();
+
+        // Sinkronisasi otomatis status transaksi Midtrans yang masih pending (dibuat dalam 24 jam terakhir)
+        foreach ($transaksis as $transaksi) {
+            if ($transaksi->metode_bayar === 'midtrans' && $transaksi->status_bayar === 'pending') {
+                if ($transaksi->created_at && $transaksi->created_at->gt(now()->subDay())) {
+                    try {
+                        \Midtrans\Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+                        \Midtrans\Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
+
+                        $status = \Midtrans\Transaction::status($transaksi->id_transaksi);
+                        if (isset($status->transaction_status)) {
+                            $trxStatus = $status->transaction_status;
+                            if ($trxStatus == 'capture' || $trxStatus == 'settlement') {
+                                $transaksi->update(['status_bayar' => 'lunas']);
+                            } elseif ($trxStatus == 'expire' || $trxStatus == 'cancel' || $trxStatus == 'deny') {
+                                $transaksi->update(['status_bayar' => 'gagal']);
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        // Lewati jika ada kendala koneksi ke API Midtrans
+                    }
+                }
+            }
+        }
+
+        // Ambil ulang data transaksi setelah sinkronisasi
+        $transaksis = Transaksi::with(['user', 'details'])->latest()->get();
         return view('transaksi.index', compact('transaksis'));
     }
 
@@ -131,14 +158,16 @@ class TransaksiController extends Controller
     public function midtransCallback(Request $request)
     {
         $serverKey = env('MIDTRANS_SERVER_KEY');
-        $hashed = hash('sha512', $request->order_id . $request->status_code . $request->gross_amount . $serverKey);
+        // Format gross_amount agar selalu presisi dengan 2 digit desimal sesuai standar Midtrans signature
+        $grossAmount = number_format((float) $request->gross_amount, 2, '.', '');
+        $hashed = hash('sha512', $request->order_id . $request->status_code . $grossAmount . $serverKey);
 
         if ($hashed == $request->signature_key) {
             $transaksi = Transaksi::find($request->order_id);
             if ($transaksi) {
                 if ($request->transaction_status == 'capture' || $request->transaction_status == 'settlement') {
                     $transaksi->update(['status_bayar' => 'lunas']);
-                } elseif ($request->transaction_status == 'expire' || $request->transaction_status == 'cancel') {
+                } elseif ($request->transaction_status == 'expire' || $request->transaction_status == 'cancel' || $request->transaction_status == 'deny') {
                     $transaksi->update(['status_bayar' => 'gagal']);
                 }
             }
@@ -227,6 +256,27 @@ class TransaksiController extends Controller
     public function show(Transaksi $transaksi)
     {
         $transaksi->load(['user', 'details.barang', 'details.jasa']);
+
+        // Sinkronisasi otomatis status transaksi Midtrans yang masih pending ke API Midtrans
+        if ($transaksi->metode_bayar === 'midtrans' && $transaksi->status_bayar === 'pending') {
+            try {
+                \Midtrans\Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+                \Midtrans\Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
+
+                $status = \Midtrans\Transaction::status($transaksi->id_transaksi);
+                if (isset($status->transaction_status)) {
+                    $trxStatus = $status->transaction_status;
+                    if ($trxStatus == 'capture' || $trxStatus == 'settlement') {
+                        $transaksi->update(['status_bayar' => 'lunas']);
+                    } elseif ($trxStatus == 'expire' || $trxStatus == 'cancel' || $trxStatus == 'deny') {
+                        $transaksi->update(['status_bayar' => 'gagal']);
+                    }
+                }
+            } catch (\Exception $e) {
+                // Lewati jika ada kendala koneksi ke API Midtrans
+            }
+        }
+
         return view('transaksi.show', compact('transaksi'));
     }
 }
