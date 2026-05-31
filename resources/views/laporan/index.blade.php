@@ -62,13 +62,13 @@
 
 <div class="detail-grid" style="margin-bottom: 2rem;">
     <div class="data-card" style="padding: 2rem;">
-        <h2 class="section-title"><i data-lucide="package"></i> Top 5 Barang Terlaris</h2>
+        <h2 class="section-title"><i data-lucide="package"></i> Top 5 Barang Terlaris — {{ $label }}</h2>
         <div style="height: 250px;">
             <canvas id="topBarangChart"></canvas>
         </div>
     </div>
     <div class="data-card" style="padding: 2rem;">
-        <h2 class="section-title"><i data-lucide="wrench"></i> Top 5 Jasa Terpopuler</h2>
+        <h2 class="section-title"><i data-lucide="wrench"></i> Top 5 Jasa Terpopuler — {{ $label }}</h2>
         <div style="height: 250px;">
             <canvas id="topJasaChart"></canvas>
         </div>
