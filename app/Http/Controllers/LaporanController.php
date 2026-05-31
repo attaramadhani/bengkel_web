@@ -32,11 +32,11 @@ class LaporanController extends Controller
 
             // Pendapatan chart mingguan (populasi 7 hari)
             $revenueRaw = Transaksi::select(
-                    DB::raw('DATE(created_at) as date_label'),
+                    DB::raw('CAST(created_at AS DATE) as date_label'),
                     DB::raw('SUM(total_pembayaran) as total')
                 )
                 ->whereBetween('created_at', [$startOfWeek, $endOfWeek])
-                ->groupBy('date_label')
+                ->groupBy(DB::raw('CAST(created_at AS DATE)'))
                 ->get();
 
             $revenueData = collect();
@@ -64,11 +64,11 @@ class LaporanController extends Controller
 
             // Pendapatan chart bulanan (populasi semua tanggal bulan ini)
             $revenueRaw = Transaksi::select(
-                    DB::raw('DATE(created_at) as date_label'),
+                    DB::raw('CAST(created_at AS DATE) as date_label'),
                     DB::raw('SUM(total_pembayaran) as total')
                 )
                 ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-                ->groupBy('date_label')
+                ->groupBy(DB::raw('CAST(created_at AS DATE)'))
                 ->get();
 
             $revenueData = collect();
@@ -88,15 +88,15 @@ class LaporanController extends Controller
 
             // Pendapatan chart tahunan (populasi 12 bulan)
             $revenueRaw = Transaksi::select(
-                    DB::raw('MONTH(created_at) as month_num'),
+                    DB::raw('EXTRACT(MONTH FROM created_at) as month_num'),
                     DB::raw('SUM(total_pembayaran) as total')
                 )
                 ->whereYear('created_at', $tahun)
-                ->groupBy('month_num')
+                ->groupBy(DB::raw('EXTRACT(MONTH FROM created_at)'))
                 ->get();
 
             $revenueData = collect(range(1, 12))->map(function ($m) use ($revenueRaw) {
-                $match = $revenueRaw->firstWhere('month_num', $m);
+                $match = $revenueRaw->first(fn($item) => (int)$item->month_num == $m);
                 return (object)[
                     'label' => \Carbon\Carbon::create()->month($m)->format('M'),
                     'total' => $match ? (float)$match->total : 0.0
