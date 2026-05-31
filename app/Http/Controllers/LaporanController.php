@@ -109,26 +109,29 @@ class LaporanController extends Controller
         $totalPendapatan = (clone $query)->sum('total_pembayaran');
         $totalTransaksi = (clone $query)->count();
 
-        // 2. Top 5 Barang Terlaris
+        // 4. Daftar Transaksi sesuai filter (ditarik lebih awal untuk filter Top Barang & Jasa)
+        $transaksis = $query->with(['user', 'details'])->latest()->get();
+        $transaksiIds = $transaksis->pluck('id_transaksi');
+
+        // 2. Top 5 Barang Terlaris sesuai filter
         $topBarang = DetailTransaksi::with('barang')
             ->whereNotNull('id_barang')
+            ->whereIn('id_transaksi', $transaksiIds)
             ->select('id_barang', DB::raw('SUM(qty) as total_qty'))
             ->groupBy('id_barang')
             ->orderBy('total_qty', 'DESC')
             ->take(5)
             ->get();
 
-        // 3. Top 5 Jasa Terpopuler
+        // 3. Top 5 Jasa Terpopuler sesuai filter
         $topJasa = DetailTransaksi::with('jasa')
             ->whereNotNull('id_jasa')
+            ->whereIn('id_transaksi', $transaksiIds)
             ->select('id_jasa', DB::raw('COUNT(*) as total_count'))
             ->groupBy('id_jasa')
             ->orderBy('total_count', 'DESC')
             ->take(5)
             ->get();
-
-        // 4. Daftar Transaksi sesuai filter
-        $transaksis = $query->with(['user', 'details'])->latest()->get();
 
         return view('laporan.index', compact(
             'revenueData', 'topBarang', 'topJasa',
